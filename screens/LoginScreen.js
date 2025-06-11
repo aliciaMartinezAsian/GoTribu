@@ -44,7 +44,6 @@ export default function LoginScreen({ navigation }) {
         .then(async (userCredential) => {
           const user = userCredential.user;
 
-          // Guarda datos adicionales si no existen
           const userRef = doc(firestore(), 'users', user.uid);
           const snapshot = await userRef.get();
           if (!snapshot.exists) {
@@ -56,7 +55,7 @@ export default function LoginScreen({ navigation }) {
             });
           }
 
-          navigation.replace('Home');
+          navigation.replace('Main');
         })
         .catch((error) => {
           Alert.alert('Error', error.message);
@@ -67,7 +66,7 @@ export default function LoginScreen({ navigation }) {
   const handleSignIn = async () => {
     try {
       await signInWithEmailAndPassword(auth(), email, password);
-      navigation.replace('Home');
+      navigation.replace('Main');
     } catch (error) {
       const errorCode = error.code;
       const errorMessage = error.message;
@@ -75,16 +74,14 @@ export default function LoginScreen({ navigation }) {
       let customMessage = 'Ocurrió un error al iniciar sesión.';
 
       if (errorCode === 'auth/wrong-password') {
-        customMessage = 'Contraseña incorrecta. Por favor, inténtalo de nuevo.';
+        customMessage = 'Contraseña incorrecta.';
       } else if (errorCode === 'auth/user-not-found') {
-        customMessage = 'No se encontró ninguna cuenta asociada a este correo electrónico.';
+        customMessage = 'Usuario no encontrado.';
       } else if (errorCode === 'auth/invalid-email') {
-        customMessage = 'El correo electrónico ingresado no es válido.';
-      } else if (errorCode === 'auth/invalid-credential') {
-        customMessage = 'Las credenciales proporcionadas son incorrectas o han caducado.';
+        customMessage = 'Correo electrónico inválido.';
       }
 
-      Alert.alert('Error al iniciar sesión', customMessage);
+      Alert.alert('Inicio de sesión fallido', customMessage);
     }
   };
 
@@ -93,29 +90,39 @@ export default function LoginScreen({ navigation }) {
       const userCredential = await createUserWithEmailAndPassword(auth(), email, password);
       const user = userCredential.user;
 
-      // Guarda el usuario en Firestore
       const userRef = doc(firestore(), 'users', user.uid);
       await userRef.set({
         email: user.email,
         createdAt: firestore.FieldValue.serverTimestamp(),
       });
 
-      navigation.replace('Home');
+      navigation.replace('Main');
     } catch (error) {
       const errorCode = error.code;
       const errorMessage = error.message;
 
-      let customMessage = 'Ocurrió un error al crear la cuenta.';
+      let customMessage = 'Error al crear la cuenta.';
 
       if (errorCode === 'auth/email-already-in-use') {
-        customMessage = 'Ya existe una cuenta asociada a este correo electrónico.';
-      } else if (errorCode === 'auth/invalid-email') {
-        customMessage = 'El correo electrónico ingresado no es válido.';
+        customMessage = 'El correo ya está en uso.';
       } else if (errorCode === 'auth/weak-password') {
         customMessage = 'La contraseña debe tener al menos 6 caracteres.';
       }
 
-      Alert.alert('Error al crear cuenta', customMessage);
+      Alert.alert('Registro fallido', customMessage);
+    }
+  };
+
+  // Función para login con usuario de prueba
+  const handleGuestLogin = async () => {
+    const testEmail = 'test@example.com';
+    const testPassword = 'password123';
+
+    try {
+      await signInWithEmailAndPassword(auth(), testEmail, testPassword);
+      navigation.replace('Main');
+    } catch (error) {
+      Alert.alert('Error al iniciar como invitado', error.message);
     }
   };
 
@@ -123,7 +130,7 @@ export default function LoginScreen({ navigation }) {
     <View style={styles.container}>
       {/* Icono redondo */}
       <Image
-        source={require('./logo.png')} // Asegúrate de que sea el nombre correcto
+        source={require('./logo.png')}
         style={styles.logo}
       />
 
@@ -156,6 +163,14 @@ export default function LoginScreen({ navigation }) {
       >
         <Text style={styles.buttonText}>Iniciar sesión con Google</Text>
       </TouchableOpacity>
+
+      {/* Botón de inicio como invitado */}
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: '#6792F0', marginTop: 30 }]}
+        onPress={handleGuestLogin}
+      >
+        <Text style={styles.buttonText}>Iniciar como Invitado</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -170,7 +185,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 100,
     height: 100,
-    borderRadius: 50, // Hace que sea circular
+    borderRadius: 50,
     alignSelf: 'center',
     marginBottom: 20,
   },
