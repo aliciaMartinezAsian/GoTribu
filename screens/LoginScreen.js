@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import {
   View,
   TextInput,
@@ -6,134 +7,41 @@ import {
   Alert,
   StyleSheet,
   Text,
-  TouchableOpacity,
-  Image,
+  TouchableOpacity
 } from 'react-native';
-
-import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
-
-import {
-  GoogleAuthProvider,
-  signInWithCredential,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-} from '@react-native-firebase/auth';
-
-import { auth, firestore } from '../services/firebase';
-import { doc, setDoc } from '@react-native-firebase/firestore';
-
-WebBrowser.maybeCompleteAuthSession();
+import { AuthContext } from '../AuthContext';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: '727634146490-2n6islcsi9jokiqej013frsq3scmlj2e.apps.googleusercontent.com',
-    expoClientId: '727634146490-2t8p8ho2pfqhbvrjrfsq26qq73qtra9h.apps.googleusercontent.com'
-  });
+  const { signIn, signUp } = React.useContext(AuthContext);
 
-  // Manejo de respuesta de Google
-  useEffect(() => {
-    if (response?.type === 'success') {
-      const { id_token } = response.authentication;
-      const credential = GoogleAuthProvider.credential(id_token);
-
-      signInWithCredential(auth(), credential)
-        .then(async (userCredential) => {
-          const user = userCredential.user;
-
-          const userRef = doc(firestore(), 'users', user.uid);
-          const snapshot = await userRef.get();
-          if (!snapshot.exists) {
-            await userRef.set({
-              email: user.email,
-              displayName: user.displayName,
-              photoURL: user.photoURL,
-              createdAt: firestore.FieldValue.serverTimestamp(),
-            });
-          }
-
-          navigation.replace('Main');
-        })
-        .catch((error) => {
-          Alert.alert('Error', error.message);
-        });
-    }
-  }, [response]);
-
-  const handleSignIn = async () => {
+  const handleLogin = async () => {
     try {
-      await signInWithEmailAndPassword(auth(), email, password);
+      await signIn(email);
       navigation.replace('Main');
     } catch (error) {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-
-      let customMessage = 'Ocurrió un error al iniciar sesión.';
-
-      if (errorCode === 'auth/wrong-password') {
-        customMessage = 'Contraseña incorrecta.';
-      } else if (errorCode === 'auth/user-not-found') {
-        customMessage = 'Usuario no encontrado.';
-      } else if (errorCode === 'auth/invalid-email') {
-        customMessage = 'Correo electrónico inválido.';
-      }
-
-      Alert.alert('Inicio de sesión fallido', customMessage);
+      Alert.alert('Error', error.message);
     }
   };
 
-  const handleCreateAccount = async () => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth(), email, password);
-      const user = userCredential.user;
-
-      const userRef = doc(firestore(), 'users', user.uid);
-      await userRef.set({
-        email: user.email,
-        createdAt: firestore.FieldValue.serverTimestamp(),
-      });
-
-      navigation.replace('Main');
-    } catch (error) {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-
-      let customMessage = 'Error al crear la cuenta.';
-
-      if (errorCode === 'auth/email-already-in-use') {
-        customMessage = 'El correo ya está en uso.';
-      } else if (errorCode === 'auth/weak-password') {
-        customMessage = 'La contraseña debe tener al menos 6 caracteres.';
-      }
-
-      Alert.alert('Registro fallido', customMessage);
+  const handleRegister = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Ingresa correo y contraseña');
+      return;
     }
-  };
-
-  // Función para login con usuario de prueba
-  const handleGuestLogin = async () => {
-    const testEmail = 'test@example.com';
-    const testPassword = 'password123';
 
     try {
-      await signInWithEmailAndPassword(auth(), testEmail, testPassword);
+      await signUp(email, password);
       navigation.replace('Main');
     } catch (error) {
-      Alert.alert('Error al iniciar como invitado', error.message);
+      Alert.alert('Error', error.message);
     }
   };
 
   return (
     <View style={styles.container}>
-      {/* Icono redondo */}
-      <Image
-        source={require('./logo.png')}
-        style={styles.logo}
-      />
-
       <Text style={styles.title}>Bienvenido a GoTribu</Text>
 
       <TextInput
@@ -153,24 +61,8 @@ export default function LoginScreen({ navigation }) {
         style={styles.input}
       />
 
-      <Button title="Iniciar Sesión" onPress={handleSignIn} />
-      <Button title="Crear Cuenta" onPress={handleCreateAccount} color="#4CAF50" />
-
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: '#DB4437' }]}
-        disabled={!request}
-        onPress={() => promptAsync()}
-      >
-        <Text style={styles.buttonText}>Iniciar sesión con Google</Text>
-      </TouchableOpacity>
-
-      {/* Botón de inicio como invitado */}
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: '#6792F0', marginTop: 30 }]}
-        onPress={handleGuestLogin}
-      >
-        <Text style={styles.buttonText}>Iniciar como Invitado</Text>
-      </TouchableOpacity>
+      <Button title="Iniciar Sesión" onPress={handleLogin} />
+      <Button title="Crear Cuenta" onPress={handleRegister} color="#4CAF50" />
     </View>
   );
 }
@@ -182,13 +74,6 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#fff',
   },
-  logo: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    alignSelf: 'center',
-    marginBottom: 20,
-  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -199,18 +84,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 8,
     marginBottom: 15,
     paddingHorizontal: 15,
-  },
-  button: {
-    marginTop: 15,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
   },
 });

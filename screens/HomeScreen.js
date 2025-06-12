@@ -1,53 +1,70 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
-import { firestore } from '../services/firebase';
-import { collection, query, where, getDocs } from '@react-native-firebase/firestore';
+
+import React, { useContext, useState, useEffect } from 'react';
+import {
+  View,
+  FlatList,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Button
+} from 'react-native';
+import { AuthContext } from '../AuthContext';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function HomeScreen({ navigation }) {
-  const [trips, setTrips] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { user, trips, getTripsByUserId } = useContext(AuthContext);
+  const [userTrips, setUserTrips] = useState([]);
+
+
+  useFocusEffect(
+    React.useCallback(() => {
+      loadUserTrips();
+    }, [user])
+  );
+
+  const loadUserTrips = async () => {
+    if (!user?.id) return;
+
+    try {
+      const tripsFromDB = await getTripsByUserId(user.id);
+      setUserTrips(tripsFromDB);
+    } catch (error) {
+      console.error('Error cargando viajes', error);
+    }
+  };
+
 
   useEffect(() => {
-    const fetchTrips = async () => {
-      try {
-        const q = query(collection(firestore(), 'trips'), where('userId', '==', firestore().auth().currentUser?.uid));
-        const snapshot = await getDocs(q);
-        const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setTrips(list);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (user && trips) {
+      const filtered = trips.filter(t => t.userId === user.id);
+      setUserTrips(filtered);
+    }
+  }, [trips, user]);
 
-    fetchTrips();
-  }, []);
-
-const renderTrip = ({ item }) => (
-  <TouchableOpacity onPress={() => navigation.navigate('DetalleViaje', { trip: item })}>
-    <View style={styles.tripCard}>
-      <Text style={styles.title}>{item.titulo}</Text>
-      <Text>{item.fechaIda} - {item.fechaVuelta}</Text>
-    </View>
-  </TouchableOpacity>
-);
+  const renderTrip = ({ item }) => (
+    <TouchableOpacity onPress={() => navigation.navigate('DetalleViaje', { trip: item })}>
+      <View style={styles.tripCard}>
+        <Text style={styles.title}>{item.titulo}</Text>
+        <Text>{item.fechaIda} - {item.fechaVuelta}</Text>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Mis Viajes</Text>
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
-      ) : trips.length === 0 ? (
+      {userTrips.length === 0 ? (
         <Text style={styles.empty}>No tienes viajes aún.</Text>
       ) : (
         <FlatList
-          data={trips}
+          data={userTrips}
           renderItem={renderTrip}
           keyExtractor={item => item.id}
         />
       )}
+
+      <Button title="Nuevo Viaje" onPress={() => navigation.navigate('CrearViaje')} />
     </View>
   );
 }
@@ -62,6 +79,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    textAlign: 'center',
   },
   empty: {
     textAlign: 'center',
@@ -76,5 +94,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: 'bold',
+    fontSize: 16,
   },
 });

@@ -1,26 +1,22 @@
-import React from 'react';
+
+import React, { useContext } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import { auth } from '../services/firebase';
-import { signOut } from '@react-native-firebase/auth';
+import { AuthContext } from '../AuthContext';
 
 export default function PerfilScreen({ navigation }) {
-  const user = auth().currentUser;
+  const { user, signOut } = useContext(AuthContext);
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth());
-      navigation.replace('Login');
-    } catch (error) {
-      alert('Error al cerrar sesión');
-    }
+  const handleSignOut = () => {
+    signOut();
+    navigation.navigate('Login'); 
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Perfil de usuario</Text>
-      <Text>Email: {user?.email}</Text>
-      <Text>UID: {user?.uid}</Text>
-      <Button title="Cerrar Sesión" onPress={handleLogout} color="#d32f2f" />
+      <Text style={styles.label}>Usuario:</Text>
+      <Text>{user?.email}</Text>
+
+      <Button title="Cerrar Sesión" onPress={handleSignOut} color="#d32f2f" />
     </View>
   );
 }
@@ -28,13 +24,12 @@ export default function PerfilScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     padding: 20,
+    justifyContent: 'center',
     backgroundColor: '#fff',
   },
-  title: {
-    fontSize: 24,
+  label: {
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 10,
   },
 });
