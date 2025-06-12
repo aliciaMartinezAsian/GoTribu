@@ -7,7 +7,11 @@ import {
   Button,
   Alert,
   Platform,
-  StyleSheet
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform as RNPlatform
 } from 'react-native';
 
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -24,8 +28,7 @@ export default function CrearViajeScreen({ navigation }) {
   const [sitio, setSitio] = useState('');
   const [lugares, setLugares] = useState('');
   const [presupuesto, setPresupuesto] = useState('');
-
-  const [errorFecha, setErrorFecha] = useState(''); // Nuevo estado para errores
+  const [errorFecha, setErrorFecha] = useState('');
 
   const calcularDias = () => {
     const inicio = new Date(fechaIda);
@@ -48,11 +51,9 @@ export default function CrearViajeScreen({ navigation }) {
     }
 
     if (fechaVuelta < fechaIda) {
-      Alert.alert('Fechas inválidas', 'La fecha de vuelta no puede ser anterior a la de ida');
       setErrorFecha('La fecha de vuelta no puede ser anterior a la de ida');
+      Alert.alert('Fechas inválidas', 'La fecha de vuelta debe ser posterior a la de ida');
       return;
-    } else {
-      setErrorFecha('');
     }
 
     const diasCalculados = calcularDias();
@@ -77,107 +78,142 @@ export default function CrearViajeScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        placeholder="Título del viaje"
-        value={titulo}
-        onChangeText={setTitulo}
-        style={styles.input}
-      />
-
-      <Text style={styles.label}>Fecha de ida</Text>
-      <Button title={`Seleccionar Fecha Ida: ${formatearFecha(fechaIda)}`} onPress={() => setShowIdaPicker(true)} />
-      {showIdaPicker && (
-        <DateTimePicker
-          value={fechaIda}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={(event, selectedDate) => {
-            setShowIdaPicker(Platform.OS === 'ios');
-            if (selectedDate) {
-              setFechaIda(selectedDate);
-              // Opcional: limpiar error si ya se corrigió
-              if (selectedDate <= fechaVuelta) {
-                setErrorFecha('');
-              }
-            }
-          }}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={100}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.label}>Título del viaje</Text>
+        <TextInput
+          placeholder="Ej: Vacaciones en París"
+          value={titulo}
+          onChangeText={setTitulo}
+          style={styles.input}
         />
-      )}
 
-      <Text style={styles.label}>Fecha de vuelta</Text>
-      <Button title={`Seleccionar Fecha Vuelta: ${formatearFecha(fechaVuelta)}`} onPress={() => setShowVueltaPicker(true)} />
-      {showVueltaPicker && (
-        <DateTimePicker
-          value={fechaVuelta}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={(event, selectedDate) => {
-            setShowVueltaPicker(Platform.OS === 'ios');
-            if (selectedDate) {
-              setFechaVuelta(selectedDate);
-              // Limpiar error si se corrige
-              if (selectedDate >= fechaIda) {
-                setErrorFecha('');
+        <Text style={styles.label}>Fecha de ida</Text>
+        <TouchableOpacity style={styles.pickerButton} onPress={() => setShowIdaPicker(true)}>
+          <Text>{formatearFecha(fechaIda)}</Text>
+        </TouchableOpacity>
+        {showIdaPicker && (
+          <DateTimePicker
+            value={fechaIda}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={(event, selectedDate) => {
+              setShowIdaPicker(Platform.OS === 'ios');
+              if (selectedDate) setFechaIda(selectedDate);
+            }}
+          />
+        )}
+
+        <Text style={styles.label}>Fecha de vuelta</Text>
+        <TouchableOpacity style={styles.pickerButton} onPress={() => setShowVueltaPicker(true)}>
+          <Text>{formatearFecha(fechaVuelta)}</Text>
+        </TouchableOpacity>
+        {showVueltaPicker && (
+          <DateTimePicker
+            value={fechaVuelta}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={(event, selectedDate) => {
+              setShowVueltaPicker(Platform.OS === 'ios');
+              if (selectedDate) {
+                setFechaVuelta(selectedDate);
+                if (selectedDate >= fechaIda) setErrorFecha('');
               }
-            }
-          }}
+            }}
+          />
+        )}
+
+        {errorFecha ? <Text style={styles.errorText}>{errorFecha}</Text> : null}
+
+        <Text style={styles.diasLabel}>Número de días: {calcularDias()}</Text>
+
+        <Text style={styles.label}>Sitio</Text>
+        <TextInput
+          placeholder="Ej: Barcelona"
+          value={sitio}
+          onChangeText={setSitio}
+          style={styles.input}
         />
-      )}
 
-      {/* Mensaje de error */}
-      {errorFecha !== '' && <Text style={styles.errorText}>{errorFecha}</Text>}
+        <Text style={styles.label}>Lugares de interés</Text>
+        <TextInput
+          placeholder="Ej: Playas, Museos"
+          value={lugares}
+          onChangeText={setLugares}
+          style={styles.input}
+        />
 
-      <Text style={styles.diasLabel}>Número de días: {calcularDias()}</Text>
+        <Text style={styles.label}>Presupuesto total</Text>
+        <TextInput
+          placeholder="Ej: 1500"
+          value={presupuesto}
+          onChangeText={setPresupuesto}
+          keyboardType="numeric"
+          style={styles.input}
+        />
 
-      <TextInput
-        placeholder="Sitio"
-        value={sitio}
-        onChangeText={setSitio}
-        style={styles.input}
-      />
-
-      <TextInput
-        placeholder="Lugares de interés"
-        value={lugares}
-        onChangeText={setLugares}
-        style={styles.input}
-      />
-
-      <TextInput
-        placeholder="Presupuesto total"
-        value={presupuesto}
-        onChangeText={setPresupuesto}
-        keyboardType="numeric"
-        style={styles.input}
-      />
-
-      <Button title="Guardar Viaje" onPress={handleSave} />
-    </View>
+        {/* Botón siempre visible al final */}
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <Text style={styles.saveButtonText}>Guardar Viaje</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#fff',
+  },
+  scrollContent: {
+    padding: 20,
+    flexGrow: 1,
+    justifyContent: 'space-between',
   },
   label: {
     fontWeight: 'bold',
     marginTop: 15,
-  },
-  diasLabel: {
-    fontWeight: 'bold',
     fontSize: 16,
-    marginVertical: 15,
   },
   input: {
     height: 50,
     borderColor: '#ccc',
     borderWidth: 1,
-    marginBottom: 15,
+    marginBottom: 20,
     paddingHorizontal: 10,
+    borderRadius: 8,
+    backgroundColor: '#f9f9f9',
+  },
+  pickerButton: {
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    marginBottom: 20,
+    backgroundColor: '#fafafa',
+  },
+  saveButton: {
+    backgroundColor: '#fa904d',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginVertical: 30,
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  diasLabel: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginVertical: 15,
+    color: '#333',
   },
   errorText: {
     color: 'red',

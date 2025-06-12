@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+// screens/LoginScreen.js
+import React, { useState, useContext } from 'react';
 import {
   View,
   TextInput,
@@ -7,43 +7,47 @@ import {
   Alert,
   StyleSheet,
   Text,
-  TouchableOpacity
+  TouchableOpacity,
+  Image
 } from 'react-native';
+
 import { AuthContext } from '../AuthContext';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const { signIn, signUp } = React.useContext(AuthContext);
+  const { signIn, signUp } = useContext(AuthContext);
 
-  const handleLogin = async () => {
-    try {
-      await signIn(email);
-      navigation.replace('Main');
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
-  };
-
-  const handleRegister = async () => {
+  const handleLogin = () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Ingresa correo y contraseña');
+      Alert.alert('Error', 'Correo y contraseña son obligatorios');
       return;
     }
+    signIn(email, password)
+      .then(() => navigation.replace('Main'))
+      .catch((error) => Alert.alert('Error', error.message));
+  };
 
-    try {
-      await signUp(email, password);
-      navigation.replace('Main');
-    } catch (error) {
-      Alert.alert('Error', error.message);
+  const handleRegister = () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Correo y contraseña son obligatorios');
+      return;
     }
+    signUp(email, password)
+      .then(() => navigation.replace('Main'))
+      .catch((error) => Alert.alert('Error', error.message));
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Bienvenido a GoTribu</Text>
+      {/* Logo */}
+      <Image source={require('./logo.png')} style={styles.logo} />
 
+      {/* Nombre de app */}
+      <Text style={styles.appName}>GoTribu</Text>
+
+      {/* Inputs */}
       <TextInput
         placeholder="Correo electrónico"
         value={email}
@@ -61,8 +65,14 @@ export default function LoginScreen({ navigation }) {
         style={styles.input}
       />
 
-      <Button title="Iniciar Sesión" onPress={handleLogin} />
-      <Button title="Crear Cuenta" onPress={handleRegister} color="#4CAF50" />
+      {/* Botones */}
+      <TouchableOpacity style={styles.buttonContainer} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Iniciar Sesión</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={[styles.buttonContainer, styles.registerButton]} onPress={handleRegister}>
+        <Text style={styles.buttonText}>Crear Cuenta</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -71,20 +81,46 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    padding: 20,
+    padding: 30,
     backgroundColor: '#fff',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  logo: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    alignSelf: 'center',
     marginBottom: 20,
+  },
+  appName: {
+    fontSize: 28,
+    fontWeight: 'bold',
     textAlign: 'center',
+    color: '#fa904d',
+    marginBottom: 30,
   },
   input: {
     height: 50,
-    borderColor: '#ccc',
+    borderColor: '#fa904d',
     borderWidth: 1,
-    marginBottom: 15,
+    borderRadius: 8,
     paddingHorizontal: 15,
+    marginBottom: 20,
+    backgroundColor: '#fff',
+    fontSize: 16,
+  },
+  buttonContainer: {
+    paddingVertical: 15,
+    borderRadius: 8,
+    backgroundColor: '#fa904d',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  registerButton: {
+    backgroundColor: '#4CAF50',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

@@ -5,8 +5,8 @@ import HomeScreen from '../screens/HomeScreen';
 import CrearViajeScreen from '../screens/CrearViajeScreen';
 import PerfilScreen from '../screens/PerfilScreen';
 
-// Importa el componente de iconos
-import { Ionicons } from '@expo/vector-icons'; // Puedes usar otras fuentes como FontAwesome, MaterialIcons, etc.
+// Importa iconos si usas
+import { Ionicons } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();
 
@@ -27,13 +27,22 @@ export default function BottomNav() {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#DB4437', // Color cuando está activo
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: '#ffffff',
+        tabBarInactiveTintColor: '#ddd',
+        tabBarStyle: {
+          backgroundColor: '#fa904d',
+          borderTopWidth: 0,
+          elevation: 0,
+        },
+        headerStyle: {
+          backgroundColor: '#fa904d',
+        },
+        headerTintColor: '#fff',
       })}
     >
-      <Tab.Screen name="Inicio" component={HomeScreen} />
+      <Tab.Screen name="Inicio" component={HomeScreen} options={{ title: 'Inicio' }} />
       <Tab.Screen name="NuevoViaje" component={CrearViajeScreen} options={{ title: 'Nuevo Viaje' }} />
-      <Tab.Screen name="Perfil" component={PerfilScreen} />
+      <Tab.Screen name="Perfil" component={PerfilScreen} options={{ title: 'Perfil' }} />
     </Tab.Navigator>
   );
 }

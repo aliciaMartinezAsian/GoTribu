@@ -1,11 +1,11 @@
-
+// screens/DetalleViajeScreen.js
 import React, { useContext } from 'react';
 import {
   View,
   Text,
-  Button,
-  Alert,
-  StyleSheet
+  StyleSheet,
+  TouchableOpacity,
+  Alert
 } from 'react-native';
 
 import { AuthContext } from '../AuthContext';
@@ -14,10 +14,11 @@ export default function DetalleViajeScreen({ route, navigation }) {
   const { trip } = route.params;
   const { deleteTrip } = useContext(AuthContext);
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
+    // Mostrar confirmación antes de borrar
     Alert.alert(
       'Eliminar Viaje',
-      `¿Estás seguro de que quieres eliminar "${trip.titulo}"?`,
+      `¿Estás seguro de querer eliminar "${trip.titulo}"?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -26,9 +27,9 @@ export default function DetalleViajeScreen({ route, navigation }) {
           onPress: async () => {
             try {
               await deleteTrip(trip.id);
-              navigation.goBack(); // Vuelve a Home con lista actualizada
+              navigation.goBack(); // Volver automáticamente a Home
             } catch (error) {
-              Alert.alert('Error al borrar', error.message);
+              Alert.alert('Error', error.message);
             }
           }
         }
@@ -38,29 +39,57 @@ export default function DetalleViajeScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Detalles del Viaje</Text>
+      {/* Título */}
+      <Text style={styles.sectionTitle}>Detalles del Viaje</Text>
 
-      <Text style={styles.label}>Título:</Text>
-      <Text>{trip.titulo}</Text>
+      {/* Campo: Título */}
+      <View style={styles.detailRow}>
+        <Text style={styles.label}>Título:</Text>
+        <Text style={styles.value}>{trip.titulo}</Text>
+      </View>
 
-      <Text style={styles.label}>Fechas:</Text>
-      <Text>{trip.fechaIda} - {trip.fechaVuelta}</Text>
+      {/* Campo: Fechas */}
+      <View style={styles.detailRow}>
+        <Text style={styles.label}>Fecha Ida:</Text>
+        <Text style={styles.value}>{trip.fechaIda}</Text>
+      </View>
+      <View style={styles.detailRow}>
+        <Text style={styles.label}>Fecha Vuelta:</Text>
+        <Text style={styles.value}>{trip.fechaVuelta}</Text>
+      </View>
 
-      <Text style={styles.label}>Número de días:</Text>
-      <Text>{trip.dias}</Text>
+      {/* Campo: Número de días */}
+      <View style={styles.detailRow}>
+        <Text style={styles.label}>Días:</Text>
+        <Text style={styles.value}>{trip.dias}</Text>
+      </View>
 
-      <Text style={styles.label}>Sitio:</Text>
-      <Text>{trip.sitio}</Text>
+      {/* Campo: Sitio */}
+      <View style={styles.detailRow}>
+        <Text style={styles.label}>Sitio:</Text>
+        <Text style={styles.value}>{trip.sitio}</Text>
+      </View>
 
-      <Text style={styles.label}>Lugares de interés:</Text>
-      <Text>{trip.lugares}</Text>
+      {/* Campo: Lugares de interés */}
+      <View style={styles.detailRow}>
+        <Text style={styles.label}>Lugares:</Text>
+        <Text style={styles.value}>{trip.lugares || 'No especificado'}</Text>
+      </View>
 
-      <Text style={styles.label}>Presupuesto:</Text>
-      <Text>{trip.presupuesto}</Text>
+      {/* Campo: Presupuesto */}
+      <View style={styles.detailRow}>
+        <Text style={styles.label}>Presupuesto:</Text>
+        <Text style={styles.value}>{trip.presupuesto ? `$${trip.presupuesto}` : 'No especificado'}</Text>
+      </View>
 
-      <Button title="Borrar Viaje" color="#d32f2f" onPress={handleDelete} />
+      {/* Botones: Borrar y Volver */}
+      <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
+        <Text style={styles.buttonText}>Volver</Text>
+      </TouchableOpacity>
 
-      <Button title="Volver" onPress={() => navigation.goBack()} />
+      <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={handleDelete}>
+        <Text style={styles.buttonText}>Eliminar Viaje</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -71,13 +100,43 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#fff',
   },
-  header: {
+  sectionTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    textAlign: 'center',
+  },
+  detailRow: {
+    marginBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    paddingBottom: 10,
   },
   label: {
     fontWeight: 'bold',
-    marginTop: 15,
+    color: '#333',
+    fontSize: 16,
+  },
+  value: {
+    fontSize: 16,
+    marginLeft: 10,
+    marginTop: 5,
+    color: '#555',
+  },
+  button: {
+    backgroundColor: '#fa904d',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  deleteButton: {
+    backgroundColor: '#d32f2f',
+    marginTop: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });

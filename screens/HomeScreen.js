@@ -1,26 +1,19 @@
-
+// screens/HomeScreen.js
 import React, { useContext, useState, useEffect } from 'react';
 import {
   View,
   FlatList,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  Button
+  StyleSheet
 } from 'react-native';
+
 import { AuthContext } from '../AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 
 export default function HomeScreen({ navigation }) {
-  const { user, trips, getTripsByUserId } = useContext(AuthContext);
+  const { user, getTripsByUserId } = useContext(AuthContext);
   const [userTrips, setUserTrips] = useState([]);
-
-
-  useFocusEffect(
-    React.useCallback(() => {
-      loadUserTrips();
-    }, [user])
-  );
 
   const loadUserTrips = async () => {
     if (!user?.id) return;
@@ -29,23 +22,22 @@ export default function HomeScreen({ navigation }) {
       const tripsFromDB = await getTripsByUserId(user.id);
       setUserTrips(tripsFromDB);
     } catch (error) {
-      console.error('Error cargando viajes', error);
+      console.error('Error cargando viajes:', error);
     }
   };
 
-
-  useEffect(() => {
-    if (user && trips) {
-      const filtered = trips.filter(t => t.userId === user.id);
-      setUserTrips(filtered);
-    }
-  }, [trips, user]);
+  useFocusEffect(
+    React.useCallback(() => {
+      loadUserTrips();
+    }, [user])
+  );
 
   const renderTrip = ({ item }) => (
     <TouchableOpacity onPress={() => navigation.navigate('DetalleViaje', { trip: item })}>
       <View style={styles.tripCard}>
-        <Text style={styles.title}>{item.titulo}</Text>
+        <Text style={styles.tripTitle}>{item.titulo}</Text>
         <Text>{item.fechaIda} - {item.fechaVuelta}</Text>
+        <Text style={styles.tripDays}>{item.dias} días</Text>
       </View>
     </TouchableOpacity>
   );
@@ -64,7 +56,9 @@ export default function HomeScreen({ navigation }) {
         />
       )}
 
-      <Button title="Nuevo Viaje" onPress={() => navigation.navigate('CrearViaje')} />
+      <TouchableOpacity style={styles.newTripButton} onPress={() => navigation.navigate('CrearViaje')}>
+        <Text style={styles.newTripText}>+ Nuevo Viaje</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -78,21 +72,41 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
     textAlign: 'center',
+    marginBottom: 20,
+    color: '#333',
   },
   empty: {
     textAlign: 'center',
     marginTop: 50,
     fontSize: 18,
-    color: '#666',
+    color: '#aaa',
   },
   tripCard: {
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: '#eee',
+    marginBottom: 10,
   },
-  title: {
+  tripTitle: {
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  tripDays: {
+    fontSize: 14,
+    color: '#777',
+  },
+  newTripButton: {
+    backgroundColor: '#fa904d',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  newTripText: {
+    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },
