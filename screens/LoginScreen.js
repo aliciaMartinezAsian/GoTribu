@@ -1,4 +1,4 @@
-// screens/LoginScreen.js
+
 import React, { useState, useContext } from 'react';
 import {
   View,
@@ -41,13 +41,13 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Logo */}
+      
       <Image source={require('./logo.png')} style={styles.logo} />
 
-      {/* Nombre de app */}
+      
       <Text style={styles.appName}>GoTribu</Text>
 
-      {/* Inputs */}
+      
       <TextInput
         placeholder="Correo electrónico"
         value={email}
@@ -65,7 +65,7 @@ export default function LoginScreen({ navigation }) {
         style={styles.input}
       />
 
-      {/* Botones */}
+      
       <TouchableOpacity style={styles.buttonContainer} onPress={handleLogin}>
         <Text style={styles.buttonText}>Iniciar Sesión</Text>
       </TouchableOpacity>

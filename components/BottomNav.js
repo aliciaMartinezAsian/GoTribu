@@ -1,11 +1,11 @@
-// components/BottomNav.js
+
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
 import CrearViajeScreen from '../screens/CrearViajeScreen';
 import PerfilScreen from '../screens/PerfilScreen';
 
-// Importa iconos si usas
+
 import { Ionicons } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();

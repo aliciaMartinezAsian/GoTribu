@@ -1,4 +1,4 @@
-// screens/DetalleViajeScreen.js
+
 import React, { useContext } from 'react';
 import {
   View,
@@ -15,7 +15,7 @@ export default function DetalleViajeScreen({ route, navigation }) {
   const { deleteTrip } = useContext(AuthContext);
 
   const handleDelete = () => {
-    // Mostrar confirmación antes de borrar
+
     Alert.alert(
       'Eliminar Viaje',
       `¿Estás seguro de querer eliminar "${trip.titulo}"?`,
@@ -27,7 +27,7 @@ export default function DetalleViajeScreen({ route, navigation }) {
           onPress: async () => {
             try {
               await deleteTrip(trip.id);
-              navigation.goBack(); // Volver automáticamente a Home
+              navigation.goBack(); 
             } catch (error) {
               Alert.alert('Error', error.message);
             }
@@ -39,16 +39,16 @@ export default function DetalleViajeScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Título */}
+      
       <Text style={styles.sectionTitle}>Detalles del Viaje</Text>
 
-      {/* Campo: Título */}
+      
       <View style={styles.detailRow}>
         <Text style={styles.label}>Título:</Text>
         <Text style={styles.value}>{trip.titulo}</Text>
       </View>
 
-      {/* Campo: Fechas */}
+      
       <View style={styles.detailRow}>
         <Text style={styles.label}>Fecha Ida:</Text>
         <Text style={styles.value}>{trip.fechaIda}</Text>
@@ -58,31 +58,31 @@ export default function DetalleViajeScreen({ route, navigation }) {
         <Text style={styles.value}>{trip.fechaVuelta}</Text>
       </View>
 
-      {/* Campo: Número de días */}
+      
       <View style={styles.detailRow}>
         <Text style={styles.label}>Días:</Text>
         <Text style={styles.value}>{trip.dias}</Text>
       </View>
 
-      {/* Campo: Sitio */}
+      
       <View style={styles.detailRow}>
         <Text style={styles.label}>Sitio:</Text>
         <Text style={styles.value}>{trip.sitio}</Text>
       </View>
 
-      {/* Campo: Lugares de interés */}
+      
       <View style={styles.detailRow}>
         <Text style={styles.label}>Lugares:</Text>
         <Text style={styles.value}>{trip.lugares || 'No especificado'}</Text>
       </View>
 
-      {/* Campo: Presupuesto */}
+      
       <View style={styles.detailRow}>
         <Text style={styles.label}>Presupuesto:</Text>
         <Text style={styles.value}>{trip.presupuesto ? `$${trip.presupuesto}` : 'No especificado'}</Text>
       </View>
 
-      {/* Botones: Borrar y Volver */}
+      
       <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
         <Text style={styles.buttonText}>Volver</Text>
       </TouchableOpacity>
